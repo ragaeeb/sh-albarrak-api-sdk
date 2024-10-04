@@ -1,3 +1,5 @@
+import { RawBookExplanation, RawBookExplanations } from './api';
+
 export type Category = {
     id: number;
     link: string;
@@ -5,24 +7,38 @@ export type Category = {
 };
 
 export type Lesson = {
+    audios?: string[];
     categories: Category[];
-    date: string;
-    dateGmt: Date;
+    content?: string;
+    date: Date;
+    dateText: string;
+    docs?: string[];
     id: number;
     link: string;
+    pdfs?: string[];
     title: string;
 };
 
-export type BookExplanation = {
-    id: number;
-    lessonCount: number;
+export interface BookExplanation extends RawBookExplanation {
     lessons?: Lesson[];
+}
+
+export type BookExplanations = RawBookExplanations;
+
+export type Fatwa = {
+    audios?: string[];
+    categories?: Category[];
+    content?: string;
+    date?: Date;
+    dateText: string;
+    id: number;
     link: string;
-    releaseDate?: string;
+    question?: string;
+
     title: string;
 };
 
-export type BookExplanations = {
-    items: BookExplanation[];
+export type Fatawa = {
+    items: Fatwa[];
     next?: string;
 };

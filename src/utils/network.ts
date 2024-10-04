@@ -1,27 +1,34 @@
 import wretch, { Wretch } from 'wretch';
 
-import { ApiResponse } from '../types/api';
-
 const baseApi: Wretch = wretch('https://sh-albarrak.com');
 
 let nextApi: undefined | Wretch;
 
-export const doGetJson = async (path: string): Promise<ApiResponse> => {
-    return (await baseApi.url(path).get().json()) as ApiResponse;
+type JsonResponse = Record<string, any>;
+
+export const doGetJson = async (path: string): Promise<JsonResponse> => {
+    return await baseApi.url(path).get().json();
 };
 
-export const doGetNextJson = async (path: string): Promise<ApiResponse> => {
-    if (!nextApi) {
-        throw new Error(`initNextApi must be called before using doGetNextJson`);
+const initNextApi = async (): Promise<Wretch> => {
+    const html = await baseApi.url('/').get().text();
+    const match = html.match(/\/_next\/static\/([a-zA-Z0-9]+)\/_buildManifest\.js/);
+
+    if (!match) {
+        throw new Error(`Build id not found in ${html}`);
     }
 
-    return (await nextApi.url(path).get().json()) as ApiResponse;
+    return wretch(`https://sh-albarrak.com/_next/data/${match[1]}`);
+};
+
+export const doGetNextJson = async (path: string): Promise<JsonResponse> => {
+    if (!nextApi) {
+        nextApi = await initNextApi();
+    }
+
+    return await nextApi.url(path).get().json();
 };
 
 export const doGetText = async (path: string): Promise<string> => {
     return baseApi.url(path).get().text();
-};
-
-export const initNextApi = (buildId: string): void => {
-    nextApi = wretch(`https://sh-albarrak.com/_next/data/${buildId}`);
 };

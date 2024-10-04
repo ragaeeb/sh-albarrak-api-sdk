@@ -1,25 +1,15 @@
-import { BookExplanationApiResponse, RawLesson, RawTopic } from './types/api';
-import { BookExplanation, BookExplanations, Category, Lesson } from './types/types';
-import { doGetJson, doGetNextJson, doGetText, initNextApi } from './utils/network';
-
-const mapTopicToCategory = (t: RawTopic): Category => ({ id: parseInt(t.id), link: t.link, title: t.title });
-
-const mapApiLesson = ({ date, dateGmt, id, link, title, topic }: RawLesson): Lesson => ({
-    categories: topic.map(mapTopicToCategory),
-    date,
-    dateGmt: new Date(dateGmt),
-    id: parseInt(id),
-    link,
-    title,
-});
+import { BookExplanationApiResponse, FullFatwaApiResponse, LessonApiResponse, RawFatawaResponse } from './types/api';
+import { BookExplanation, BookExplanations, Fatawa, Fatwa, Lesson } from './types/types';
+import { mapApiFatwaResponse, mapApiLessonResponseToLesson, mapApiRawFatwa, mapApiRawLesson } from './utils/mapping';
+import { doGetJson, doGetNextJson } from './utils/network';
 
 export const getBookExplanation = async (id: number): Promise<BookExplanation> => {
     const {
         pageProps: {
             index: { id: idStr, lessons, link, title },
         },
-    } = (await doGetNextJson(`books-explanations/${id}.json`)) as BookExplanationApiResponse;
-    return { id: parseInt(idStr), lessonCount: lessons.length, lessons: lessons.map(mapApiLesson), link, title };
+    } = (await doGetNextJson(`/books-explanations/${id}.json`)) as BookExplanationApiResponse;
+    return { id: parseInt(idStr), lessonCount: lessons.length, lessons: lessons.map(mapApiRawLesson), link, title };
 };
 
 export const getBookExplanations = async (
@@ -28,16 +18,19 @@ export const getBookExplanations = async (
     return (await doGetJson(nextToken)) as BookExplanations;
 };
 
-export const init = async (): Promise<string> => {
-    const html = await doGetText('/');
-    const match = html.match(/\/_next\/static\/([a-zA-Z0-9]+)\/_buildManifest\.js/);
-
-    if (!match) {
-        throw new Error(`Build id not found in ${html}`);
-    }
-
-    const buildId = match[1];
-    initNextApi(buildId);
-
-    return buildId;
+export const getFatawa = async (nextToken: string = `/api/posts/Fatwa`): Promise<Fatawa> => {
+    const result = (await doGetJson(nextToken)) as RawFatawaResponse;
+    return { items: result.items.map(mapApiRawFatwa), ...(result.next && { next: result.next }) };
 };
+
+export const getFatwa = async (id: number): Promise<Fatwa> => {
+    const fatwa = (await doGetNextJson(`/fatwas/${id}.json`)) as FullFatwaApiResponse;
+    return mapApiFatwaResponse(fatwa);
+};
+
+export const getLesson = async (id: number): Promise<Lesson> => {
+    const lesson = (await doGetNextJson(`/books-explanations/lessons/${id}.json`)) as LessonApiResponse;
+    return mapApiLessonResponseToLesson(lesson);
+};
+
+export * from './types/types';
