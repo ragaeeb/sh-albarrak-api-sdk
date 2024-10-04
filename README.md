@@ -21,18 +21,73 @@ pnpm i sh-albarrak-api-sdk
 ### Importing the SDK
 
 ```javascript
-import { getLessons } from 'sh-albarrak-api-sdk';
+import { getBookExplanation } from 'sh-albarrak-api-sdk';
 ```
 
-### Get Lessons Information
+### getBookExplanation()
 
-Retrieve metadata about a specific book.
+Retrieve explanations about a specific book.
 
 ```javascript
 (async () => {
     try {
-        const lessons = await getLessons({ limit: 2, page: 1 });
-        console.log(lessons); // [{id: 1, body: 'B', title: 'Title', updatedAt: 1234566}]
+        const data = await getBookExplanation(122);
+    } catch (error) {
+        console.error(error.message);
+    }
+})();
+```
+
+### getBookExplanations()
+
+Retrieve a list of explanations of books by the Shaykh.
+
+```javascript
+(async () => {
+    try {
+        const data = await getBookExplanations();
+    } catch (error) {
+        console.error(error.message);
+    }
+})();
+```
+
+### getFatawa()
+
+Retrieve a list of fatawa.
+
+```javascript
+(async () => {
+    try {
+        const bookExplanations = await getFatawa();
+    } catch (error) {
+        console.error(error.message);
+    }
+})();
+```
+
+### getFatwa()
+
+Retrieve a specific fatwa.
+
+```javascript
+(async () => {
+    try {
+        const fatwa = await getFatwa(1234);
+    } catch (error) {
+        console.error(error.message);
+    }
+})();
+```
+
+### getLesson()
+
+Retrieve explanations about books.
+
+```javascript
+(async () => {
+    try {
+        const lesson = await getLesson();
     } catch (error) {
         console.error(error.message);
     }
