@@ -1,143 +1,109 @@
 import { describe, expect, it } from 'vitest';
 
-import { FullFatwaApiResponse, LessonApiResponse, RawFatwa, RawLesson } from '../types/api';
-import { Fatwa, Lesson } from '../types/types';
-import { mapApiFatwaResponse, mapApiLessonResponseToLesson, mapApiRawFatwa, mapApiRawLesson } from './mapping';
+import { mapContentEntityToPage, mapContentItem, mapSiteMapToIds } from './mapping';
 
 describe('mapping', () => {
-    describe('mapApiFatwaResponse', () => {
-        it('should map FullFatwaApiResponse to Fatwa correctly', () => {
-            const apiResponse: FullFatwaApiResponse = {
-                pageProps: {
-                    fullDate: '2023-01-01',
-                    postContent: {
-                        audios: [{ link: 'audio1.mp3' }],
-                        content: 'Fatwa content',
-                        date: 'January 1, 2023',
-                        dateISO: '2023-01-01',
-                        id: '1',
-                        link: '/fatwa-link',
-                        question: 'What is the ruling?',
-                        tags: [],
-                        title: 'Fatwa Title',
-                        topics: [{ id: '123', link: '/topic-link', title: 'Topic Title' }],
-                    },
-                    relatedPosts: [],
-                    selectedPage: 1,
-                },
-            };
+    describe('mapContentItem', () => {
+        it('should map fields correctly for ContentItem', () => {
+            const result = mapContentItem({
+                date: '01/01/2022',
+                id: '789',
+                link: 'item-link',
+                title: 'Item Title',
+            });
+            expect(result).toEqual({
+                dateArabic: '01/01/2022',
+                id: 789,
+                link: 'item-link',
+                title: 'Item Title',
+            });
+        });
 
-            const expected: Fatwa = {
-                audios: ['audio1.mp3'],
-                categories: [{ id: 123, link: '/topic-link', title: 'Topic Title' }],
-                content: 'Fatwa content',
-                date: new Date('2023-01-01'),
-                dateText: 'January 1, 2023',
-                id: 1,
-                link: '/fatwa-link',
-                question: 'What is the ruling?',
-                title: 'Fatwa Title',
+        it('should handle missing fields gracefully', () => {
+            const incompleteContentItem = {
+                id: '123',
+                title: 'Incomplete Item',
             };
-
-            expect(mapApiFatwaResponse(apiResponse)).toEqual(expected);
+            const result = mapContentItem(incompleteContentItem);
+            expect(result).toEqual({
+                dateArabic: undefined,
+                id: 123,
+                link: undefined,
+                title: 'Incomplete Item',
+            });
         });
     });
 
-    describe('mapApiLessonResponseToLesson', () => {
-        it('should map LessonApiResponse to Lesson correctly', () => {
-            const lessonResponse: LessonApiResponse = {
-                pageProps: {
-                    fullDate: '2023-01-01',
-                    postContent: {
-                        audios: [{ link: 'audio1.mp3' }],
-                        content: 'Lesson content',
-                        date: 'January 1, 2023',
-                        dateISO: '2023-01-01',
-                        id: '1',
-                        link: '/lesson-link',
-                        nextPost: null,
-                        pdfs: [{ link: 'pdf1.pdf' }],
-                        prevPost: null,
-                        tags: [],
-                        title: 'Lesson Title',
-                        topics: [],
-                        words: [{ link: 'doc1.doc' }],
-                    },
-                    relatedPosts: [],
-                    selectedPage: 1,
-                    seriesInfo: {
-                        seriesStartDate: '2023-01-01',
-                        seriesStatus: 'Ongoing',
-                        topic: { link: '/series-link', title: 'Series Title' },
-                    },
-                },
-            };
+    describe('mapContentEntityToPage', () => {
+        it('should map basic fields correctly', () => {
+            const result = mapContentEntityToPage({
+                audios: [{ link: 'audio1' }, { link: 'audio2' }],
+                content: 'This is the content',
+                date: '14/02/2022',
+                dateISO: '2022-02-14T00:00:00Z',
+                excerpt: 'This is a test excerpt',
+                id: '123',
+                link: 'test-link',
+                pdfs: [{ link: 'pdf1' }],
+                title: 'Test Title',
+                words: [{ link: 'doc1' }],
+                youtubeId: 'youtubeId123',
+            });
+            expect(result).toEqual({
+                audios: ['audio1', 'audio2'],
+                content: 'This is the content',
+                date: new Date('2022-02-14T00:00:00Z'),
+                dateArabic: '14/02/2022',
+                docs: ['doc1'],
+                excerpt: 'This is a test excerpt',
+                id: 123,
+                link: 'test-link',
+                pdfs: ['pdf1'],
+                title: 'Test Title',
+                youtubeId: 'youtubeId123',
+            });
+        });
 
-            const expected: Lesson = {
-                audios: ['audio1.mp3'],
-                categories: [],
-                content: 'Lesson content',
-                date: new Date('2023-01-01'),
-                dateText: 'January 1, 2023',
-                docs: ['doc1.doc'],
-                id: 1,
-                link: '/lesson-link',
-                pdfs: ['pdf1.pdf'],
-                title: 'Lesson Title',
+        it('should handle missing or undefined optional fields', () => {
+            const entityWithMissingFields = {
+                dateISO: '2022-03-01T00:00:00Z',
+                id: '456',
+                link: 'another-link',
+                title: 'Another Title',
             };
+            const result = mapContentEntityToPage(entityWithMissingFields);
 
-            expect(mapApiLessonResponseToLesson(lessonResponse)).toEqual(expected);
+            expect(result).toEqual({
+                audios: undefined,
+                content: undefined,
+                date: new Date('2022-03-01T00:00:00Z'),
+                dateArabic: undefined,
+                docs: undefined,
+                excerpt: undefined,
+                id: 456,
+                link: 'another-link',
+                pdfs: undefined,
+                title: 'Another Title',
+                youtubeId: undefined,
+            });
         });
     });
 
-    describe('mapApiRawFatwa', () => {
-        it('should map RawFatwa to Fatwa correctly', () => {
-            const rawFatwa: RawFatwa = {
-                date: 'January 1, 2023',
-                id: '1',
-                link: '/fatwa-link',
-                postSlug: 'fatwa-slug',
-                releaseDate: '2023-01-01',
-                tags: [],
-                tagsLength: 0,
-                title: 'Fatwa Title',
-                topics: [],
-                topicsLength: 0,
-                type: { link: '/type-link', title: 'Type Title' },
-            };
+    describe('mapSiteMapToIds', () => {
+        it('should handle fatwas', () => {
+            const actual = mapSiteMapToIds(
+                `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://sh-albarrak.com/fatwas/30618</loc><lastmod>2024-10-01T06:01:44.000Z</lastmod></url><url><loc>https://sh-albarrak.com/fatwas/30617</loc><lastmod>2024-10-01T06:00:56.000Z</lastmod></url></urlset>`,
+            );
 
-            const expected: Fatwa = {
-                dateText: 'January 1, 2023',
-                id: 1,
-                link: '/fatwa-link',
-                title: 'Fatwa Title',
-            };
-
-            expect(mapApiRawFatwa(rawFatwa)).toEqual(expected);
+            expect(actual).toEqual([30617, 30618]);
         });
-    });
 
-    describe('mapApiRawLesson', () => {
-        it('should map RawLesson to Lesson correctly', () => {
-            const rawLesson: RawLesson = {
-                date: 'January 1, 2023',
-                dateGmt: '2023-01-01',
-                id: '1',
-                link: '/lesson-link',
-                title: 'Lesson Title',
-                topic: [{ id: '123', link: '/topic-link', title: 'Topic Title' }],
-            };
+        it('should handle lessons', () => {
+            const actual = mapSiteMapToIds(
+                `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://sh-albarrak.com/books-explanations/lessons/29842</loc><lastmod>2024-08-06T09:08:26.000Z</lastmod></url></urlset>`,
+            );
 
-            const expected: Lesson = {
-                categories: [{ id: 123, link: '/topic-link', title: 'Topic Title' }],
-                date: new Date('2023-01-01'),
-                dateText: 'January 1, 2023',
-                id: 1,
-                link: '/lesson-link',
-                title: 'Lesson Title',
-            };
-
-            expect(mapApiRawLesson(rawLesson)).toEqual(expected);
+            expect(actual).toEqual([29842]);
         });
     });
 });
