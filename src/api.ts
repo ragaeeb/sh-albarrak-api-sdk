@@ -1,7 +1,12 @@
-import { PageApiResponse, PaginatedApiResponse } from './types/apiResponses';
-import { Page, PaginatedContentItems } from './types/types';
+import { ApiResponse, CollectionPageProps, PageProps, PaginatedApiResponse } from './types/apiResponses';
+import { Collection, Page, PaginatedContentItems } from './types/types';
 import { removeFalsyValues } from './utils/common';
-import { mapContentEntityToPage, mapContentItem, mapSiteMapToIds } from './utils/mapping';
+import {
+    mapCollectionPagePropsToCollection,
+    mapContentEntityToPage,
+    mapContentItem,
+    mapSiteMapToIds,
+} from './utils/mapping';
 import { doGetJson, doGetNextJson, doGetText } from './utils/network';
 
 export const getIdsFromSiteMap = async (endpoint: string): Promise<number[]> => {
@@ -17,7 +22,11 @@ export const getItems = async (endpoint: string): Promise<PaginatedContentItems>
     }) as PaginatedContentItems;
 };
 
-export const getPageContent = async (route: string, id: number): Promise<Page> => {
-    const result = (await doGetNextJson(`/${route}/${id}.json`)) as PageApiResponse;
-    return removeFalsyValues(mapContentEntityToPage(result.pageProps.postContent)) as Page;
+export const getPageContent = async (route: string, id: number): Promise<Collection | Page> => {
+    const result = (await doGetNextJson(`/${route}/${id}.json`)) as ApiResponse;
+    const mapped = (result.pageProps as CollectionPageProps).index
+        ? mapCollectionPagePropsToCollection(result.pageProps as CollectionPageProps)
+        : mapContentEntityToPage((result.pageProps as PageProps).postContent);
+
+    return removeFalsyValues(mapped) as Collection | Page;
 };

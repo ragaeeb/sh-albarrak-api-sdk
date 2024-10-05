@@ -12,6 +12,7 @@ export type ContentType = {
 
 export type ContentItem = {
     date?: string;
+    dateGmt?: string;
     excerpt?: string;
     id: string;
     lessonCount?: number;
@@ -21,6 +22,7 @@ export type ContentItem = {
     tags?: string[];
     tagsLength?: number;
     title: string;
+    topic?: Topic[];
     topics?: Topic[];
     topicsLength?: number;
     type?: ContentType;
@@ -65,8 +67,10 @@ export type ContentEntity = {
     relatedPosts?: RelatedPost[];
     seriesInfo?: SeriesInfo;
     tags?: string[];
+    tagsLength?: number;
     title: string;
     topics?: Topic[];
+    topicsLength?: number;
     type?: ContentType;
     words?: Resource[];
     youtubeId?: string; // YouTube video ID, optional for video content
@@ -77,19 +81,57 @@ type Breadcrumb = {
     label: string;
 };
 
+export type ContentPreview = {
+    date: string;
+    dateGmt: string;
+    id: string;
+    link: string;
+    title: string;
+    topic: Topic[];
+};
+
+export type Index = {
+    children: any[];
+    id: string;
+    lessons: ContentPreview[];
+    link: string;
+    parents: any[];
+    title: string;
+};
+
 type PageInfo = {
     nextHref?: string;
     prevHref?: string;
 };
 
-export type PageApiResponse = {
+type Order = {
+    ascUrl: string;
+    descUrl: string;
+    orderSlug: string;
+};
+
+export type CollectionPageProps = {
     breadcrumb?: Breadcrumb[];
     fullDate?: string; // Full date with Hijri/Gregorian format
+    index: Index;
+    infinityScrollApi: null | string;
     lastLessons?: ContentEntity[]; // Last lessons or content in a series
+    order?: Order;
     pageInfo?: PageInfo;
-    pageProps: {
-        postContent: ContentEntity; // The main content entity (article, audio book, etc.)
-    };
-    relatedPosts?: ContentEntity[]; // Related content (can also be ContentEntity references)
-    selectedPage?: number; // Optional pagination information
+    selectedPage: number;
+    series: SeriesInfo;
+    title: string;
 };
+
+export type PageProps = {
+    breadcrumb?: Breadcrumb[];
+    fullDate?: string; // Full date with Hijri/Gregorian format
+    pageInfo?: PageInfo;
+    postContent: ContentEntity; // The main content entity (article, audio book, etc.)
+    relatedPosts?: ContentEntity[]; // Related content (can also be ContentEntity references)
+    selectedPage: number;
+};
+
+export interface ApiResponse {
+    pageProps: CollectionPageProps | PageProps;
+}

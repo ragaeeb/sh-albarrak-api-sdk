@@ -1,12 +1,31 @@
 import { XMLParser } from 'fast-xml-parser';
 
-import { ContentEntity, ContentItem, Resource } from '../types/apiResponses';
-import { DataType, Item, Page } from '../types/types';
+import {
+    CollectionPageProps,
+    ContentEntity,
+    ContentItem,
+    ContentPreview,
+    Index,
+    Resource,
+} from '../types/apiResponses';
+import { Collection, DataType, Item, Page } from '../types/types';
 
 const mapResource = (key: string, resources: Resource[] = []): Record<string, string[]> | undefined => {
     if (resources?.length > 0) {
         return { [key]: resources.map((a) => a.link) };
     }
+};
+
+export const mapCollectionPagePropsToCollection = (response: CollectionPageProps): Collection => {
+    const { id, lessons, link, title }: Index = response.index;
+
+    return {
+        id: parseInt(id),
+        link,
+        pages: lessons.map(mapContentPreviewToPage),
+        title,
+        ...(response.infinityScrollApi && { nextUrl: response.infinityScrollApi }),
+    };
 };
 
 export const mapContentEntityToPage = ({
@@ -35,12 +54,17 @@ export const mapContentEntityToPage = ({
     ...mapResource('docs', words),
 });
 
-export const mapContentItem = ({ date, id, link, title }: ContentItem): Item => ({
+export const mapContentItem = ({ date, dateGmt, id, link, title }: ContentItem): Item => ({
     dateArabic: date,
     id: parseInt(id),
+    ...(dateGmt && { date: new Date(dateGmt) }),
     link,
     title,
 });
+
+const mapContentPreviewToPage = ({ date, dateGmt, id, link, title }: ContentPreview): Page => {
+    return { date: new Date(dateGmt), dateArabic: date, id: parseInt(id), link, title };
+};
 
 export const mapSiteMapToIds = (sitemapXml: string): number[] => {
     const parser = new XMLParser({

@@ -1,4 +1,5 @@
 export interface Item {
+    date?: Date;
     dateArabic?: string;
     id: number;
     link?: string;
@@ -8,11 +9,15 @@ export interface Item {
 export interface Page extends Item {
     audios?: string[];
     content?: string;
-    date?: Date;
     docs?: string[];
     excerpt?: string;
     pdfs?: string[];
     youtubeId?: string;
+}
+
+export interface Collection extends Item {
+    nextUrl?: string;
+    pages: Page[];
 }
 
 export enum DataType {
