@@ -42,3 +42,7 @@ export type PaginatedContentItems = {
     items: Item[];
     next?: string;
 };
+
+export type PageDataTypes = Exclude<DataType, DataType.AudioBooks | DataType.BookExplanations>;
+
+export type CollectionDataTypes = DataType.AudioBooks | DataType.BookExplanations;

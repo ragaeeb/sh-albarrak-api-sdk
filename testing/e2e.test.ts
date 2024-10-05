@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { Collection, DataType, getAllIdsFor, getDataItems, getNextItems, getPage } from '../src';
+import { Collection, DataType, getAllIdsFor, getCollection, getDataItems, getNextItems, getPage } from '../src';
 
 describe('e2e', () => {
     describe('getAllIdsFor', () => {
@@ -88,23 +88,9 @@ describe('e2e', () => {
         });
     });
 
-    describe('getPage', () => {
-        it('should get an article', async () => {
-            const actual = await getPage(18136, DataType.Articles);
-            expect(actual).toEqual({
-                content: expect.any(String),
-                dateArabic: '٣٠/شعبان/١٤٤١ الموافق ٢٣/أبريل/٢٠٢٠',
-                docs: [expect.any(String)],
-                excerpt: expect.any(String),
-                id: 18136,
-                link: '/articles/18136',
-                pdfs: [expect.any(String)],
-                title: 'ما أحلى سكون الليل',
-            });
-        });
-
+    describe('getCollection', () => {
         it('should get an audio book', async () => {
-            const actual = await getPage(24207, DataType.AudioBooks);
+            const actual = await getCollection(DataType.AudioBooks, 24207);
             expect(actual).toEqual({
                 id: 24207,
                 link: '/audio-books/indexes/24207',
@@ -138,32 +124,8 @@ describe('e2e', () => {
             });
         });
 
-        it('should get an audio book lesson', async () => {
-            const actual = await getPage(24208, DataType.AudioBooksLessons);
-            expect(actual).toEqual({
-                audios: [expect.any(String)],
-                dateArabic: '٧/ذو القعدة/١٤٤٣ الموافق ٦/يونيو/٢٠٢٢',
-                id: 24208,
-                link: '/audio-books/24208',
-                title: 'شرح رسالة القواعد الأربع للشيخ عبد الرحمن البراك',
-            });
-        });
-
-        it('should get a book', async () => {
-            const actual = await getPage(28785, DataType.Books);
-            expect(actual).toEqual({
-                content: '<p>المنهج الموحَّد لتحقيق الكتب وإخراجها</p>\n',
-                dateArabic: '٦/ذو القعدة/١٤٤٥ الموافق ١٤/مايو/٢٠٢٤',
-                excerpt: '<p>المنهج الموحَّد لتحقيق الكتب وإخراجها</p>\n',
-                id: 28785,
-                link: '/books/28785',
-                pdfs: [expect.any(String)],
-                title: 'المنهج الموحد لتحقيق الكتب وإخراجها',
-            });
-        });
-
         it('should get a book explanation', async () => {
-            const actual = (await getPage(29062, DataType.BookExplanations)) as Collection;
+            const actual = await getCollection(DataType.BookExplanations, 29062);
 
             expect(actual).toEqual({
                 id: 29062,
@@ -179,9 +141,49 @@ describe('e2e', () => {
             expect(result.items).toHaveLength(7);
             expect(result.next).toBeUndefined();
         });
+    });
+
+    describe('getPage', () => {
+        it('should get an article', async () => {
+            const actual = await getPage(DataType.Articles, 18136);
+            expect(actual).toEqual({
+                content: expect.any(String),
+                dateArabic: '٣٠/شعبان/١٤٤١ الموافق ٢٣/أبريل/٢٠٢٠',
+                docs: [expect.any(String)],
+                excerpt: expect.any(String),
+                id: 18136,
+                link: '/articles/18136',
+                pdfs: [expect.any(String)],
+                title: 'ما أحلى سكون الليل',
+            });
+        });
+
+        it('should get an audio book lesson', async () => {
+            const actual = await getPage(DataType.AudioBooksLessons, 24208);
+            expect(actual).toEqual({
+                audios: [expect.any(String)],
+                dateArabic: '٧/ذو القعدة/١٤٤٣ الموافق ٦/يونيو/٢٠٢٢',
+                id: 24208,
+                link: '/audio-books/24208',
+                title: 'شرح رسالة القواعد الأربع للشيخ عبد الرحمن البراك',
+            });
+        });
+
+        it('should get a book', async () => {
+            const actual = await getPage(DataType.Books, 28785);
+            expect(actual).toEqual({
+                content: '<p>المنهج الموحَّد لتحقيق الكتب وإخراجها</p>\n',
+                dateArabic: '٦/ذو القعدة/١٤٤٥ الموافق ١٤/مايو/٢٠٢٤',
+                excerpt: '<p>المنهج الموحَّد لتحقيق الكتب وإخراجها</p>\n',
+                id: 28785,
+                link: '/books/28785',
+                pdfs: [expect.any(String)],
+                title: 'المنهج الموحد لتحقيق الكتب وإخراجها',
+            });
+        });
 
         it('should get a daily lesson', async () => {
-            const actual = await getPage(28692, DataType.DailyLessons);
+            const actual = await getPage(DataType.DailyLessons, 28692);
 
             expect(actual).toEqual({
                 audios: [expect.any(String)],
@@ -205,7 +207,7 @@ describe('e2e', () => {
         });
 
         it('should get a fiqh selection', async () => {
-            const actual = await getPage(8624, DataType.FiqhiSelections);
+            const actual = await getPage(DataType.FiqhiSelections, 8624);
 
             expect(actual).toEqual({
                 content: expect.any(String),
@@ -217,7 +219,7 @@ describe('e2e', () => {
         });
 
         it('should get a lecture', async () => {
-            const actual = await getPage(755, DataType.Lectures);
+            const actual = await getPage(DataType.Lectures, 755);
 
             expect(actual).toEqual({
                 audios: [expect.any(String)],
@@ -230,7 +232,7 @@ describe('e2e', () => {
         });
 
         it('should get a khutbah', async () => {
-            const actual = await getPage(13614, DataType.PublicSpeeches);
+            const actual = await getPage(DataType.PublicSpeeches, 13614);
 
             expect(actual).toEqual({
                 audios: [expect.any(String)],
@@ -242,7 +244,7 @@ describe('e2e', () => {
         });
 
         it('should get a recitation', async () => {
-            const actual = await getPage(21122, DataType.Recitations);
+            const actual = await getPage(DataType.Recitations, 21122);
 
             expect(actual).toEqual({
                 audios: [expect.any(String)],
@@ -254,7 +256,7 @@ describe('e2e', () => {
         });
 
         it('should get a ilmi benefit', async () => {
-            const actual = await getPage(30577, DataType.ScienceBenefits);
+            const actual = await getPage(DataType.ScienceBenefits, 30577);
 
             expect(actual).toEqual({
                 content: expect.any(String),
@@ -267,7 +269,7 @@ describe('e2e', () => {
         });
 
         it('should get a scientific research', async () => {
-            const actual = await getPage(6748, DataType.ScientificResearches);
+            const actual = await getPage(DataType.ScientificResearches, 6748);
 
             expect(actual).toEqual({
                 content: expect.any(String),
@@ -282,7 +284,7 @@ describe('e2e', () => {
         });
 
         it('should get a video', async () => {
-            const actual = await getPage(27841, DataType.SelectedVideos);
+            const actual = await getPage(DataType.SelectedVideos, 27841);
 
             expect(actual).toEqual({
                 audios: [expect.any(String)],
