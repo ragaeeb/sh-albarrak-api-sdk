@@ -1,8 +1,8 @@
 import { promises as fs } from 'fs';
 import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
 
-import { DataType, getAllIdsFor, getDataItems, getPage } from '../src/index';
-import { Collection, Page } from './types/types';
+import { DataType, getAllIdsFor, getCollection, getDataItems, getPage } from './index';
+import { Collection, CollectionDataTypes, Page, PageDataTypes } from './types/types';
 import { doGetJson, doGetNextJson, doGetText } from './utils/network';
 
 vi.mock('./utils/network');
@@ -158,11 +158,11 @@ describe('index', () => {
     });
 
     describe('getPage', () => {
-        const loadMockData = async (path: string, dataType: DataType): Promise<Collection | Page> => {
+        const loadMockData = async (path: string, dataType: PageDataTypes): Promise<Page> => {
             const mockData = JSON.parse(await fs.readFile(`testing/nextApi/${path}`, 'utf-8'));
             (doGetNextJson as Mock).mockResolvedValue(mockData);
 
-            return getPage(1, dataType);
+            return getPage(dataType, 1);
         };
 
         it('should get an article', async () => {
@@ -176,41 +176,6 @@ describe('index', () => {
                 link: '/articles/18136',
                 pdfs: [expect.any(String)],
                 title: 'ما أحلى سكون الليل',
-            });
-        });
-
-        it('should get an audio book', async () => {
-            const actual = await loadMockData('audio-books/24207.json', DataType.AudioBooks);
-            expect(actual).toEqual({
-                id: 24207,
-                link: '/audio-books/indexes/24207',
-                pages: [
-                    {
-                        dateArabic: '٧/ذو القعدة/١٤٤٣ الموافق ٦/يونيو/٢٠٢٢',
-                        id: 24208,
-                        link: '/audio-books/lessons/24208',
-                        title: 'شرح رسالة القواعد الأربع للشيخ عبد الرحمن البراك',
-                    },
-                    {
-                        dateArabic: '٢١/شوال/١٤٤٣ الموافق ٢٢/مايو/٢٠٢٢',
-                        id: 24209,
-                        link: '/audio-books/lessons/24209',
-                        title: 'شرح رسالة الأصول الثلاثة للشيخ عبد الرحمن البراك',
-                    },
-                    {
-                        dateArabic: '٧/ذو القعدة/١٤٤٣ الموافق ٦/يونيو/٢٠٢٢',
-                        id: 24210,
-                        link: '/audio-books/lessons/24210',
-                        title: 'شرح رسالة نواقض االإسلام للشيخ عبد الرحمن البراك',
-                    },
-                    {
-                        dateArabic: '٨/ذو القعدة/١٤٤٣ الموافق ٧/يونيو/٢٠٢٢',
-                        id: 24211,
-                        link: '/audio-books/lessons/24211',
-                        title: 'شرح رسالة كشف الشبهات للشيخ عبد الرحمن البراك',
-                    },
-                ],
-                title: 'شرح القواعد الأربع والأصول الثلاثة ونواقض الإسلام وكشف الشبهات للشيخ عبدالرحمن البراك',
             });
         });
 
@@ -236,23 +201,6 @@ describe('index', () => {
                 pdfs: [expect.any(String)],
                 title: 'المنهج الموحد لتحقيق الكتب وإخراجها',
             });
-        });
-
-        it('should get a book explanation', async () => {
-            const actual = (await loadMockData(
-                'books-explanations/29062.json',
-                DataType.BookExplanations,
-            )) as Collection;
-
-            expect(actual).toEqual({
-                id: 29062,
-                link: '/books-explanations/indexes/29062',
-                nextUrl: expect.any(String),
-                pages: expect.any(Array),
-                title: 'دورة الفتوى الحموية',
-            });
-
-            expect(actual.pages).toHaveLength(10);
         });
 
         it('should get a daily lesson', async () => {
@@ -366,6 +314,64 @@ describe('index', () => {
                 link: '/selected-videos/27841',
                 title: '(1126) لمثل هذا فليعمل العاملون مقطع مؤثر للشيخ عبدالرحمن البراك',
                 youtubeId: 'Q3d4Rfb-brg',
+            });
+        });
+    });
+
+    describe('getCollection', () => {
+        const loadMockData = async (path: string, dataType: CollectionDataTypes): Promise<Collection> => {
+            const mockData = JSON.parse(await fs.readFile(`testing/nextApi/${path}`, 'utf-8'));
+            (doGetNextJson as Mock).mockResolvedValue(mockData);
+
+            return getCollection(dataType, 1);
+        };
+
+        it('should get a book explanation', async () => {
+            const actual = await loadMockData('books-explanations/29062.json', DataType.BookExplanations);
+
+            expect(actual).toEqual({
+                id: 29062,
+                link: '/books-explanations/indexes/29062',
+                nextUrl: expect.any(String),
+                pages: expect.any(Array),
+                title: 'دورة الفتوى الحموية',
+            });
+
+            expect(actual.pages).toHaveLength(10);
+        });
+
+        it('should get an audio book', async () => {
+            const actual = await loadMockData('audio-books/24207.json', DataType.AudioBooks);
+            expect(actual).toEqual({
+                id: 24207,
+                link: '/audio-books/indexes/24207',
+                pages: [
+                    {
+                        dateArabic: '٧/ذو القعدة/١٤٤٣ الموافق ٦/يونيو/٢٠٢٢',
+                        id: 24208,
+                        link: '/audio-books/lessons/24208',
+                        title: 'شرح رسالة القواعد الأربع للشيخ عبد الرحمن البراك',
+                    },
+                    {
+                        dateArabic: '٢١/شوال/١٤٤٣ الموافق ٢٢/مايو/٢٠٢٢',
+                        id: 24209,
+                        link: '/audio-books/lessons/24209',
+                        title: 'شرح رسالة الأصول الثلاثة للشيخ عبد الرحمن البراك',
+                    },
+                    {
+                        dateArabic: '٧/ذو القعدة/١٤٤٣ الموافق ٦/يونيو/٢٠٢٢',
+                        id: 24210,
+                        link: '/audio-books/lessons/24210',
+                        title: 'شرح رسالة نواقض االإسلام للشيخ عبد الرحمن البراك',
+                    },
+                    {
+                        dateArabic: '٨/ذو القعدة/١٤٤٣ الموافق ٧/يونيو/٢٠٢٢',
+                        id: 24211,
+                        link: '/audio-books/lessons/24211',
+                        title: 'شرح رسالة كشف الشبهات للشيخ عبد الرحمن البراك',
+                    },
+                ],
+                title: 'شرح القواعد الأربع والأصول الثلاثة ونواقض الإسلام وكشف الشبهات للشيخ عبدالرحمن البراك',
             });
         });
     });

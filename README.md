@@ -38,56 +38,50 @@ Gets all the unique identifiers for the given data type.
 })();
 ```
 
-### getBookExplanations()
+### getDataItems()
 
-Retrieve a list of explanations of books by the Shaykh.
+Retrieve a list of items for a data type. Note that `AudioBooksLessons`, `BooksExplanationsLessons`, and `Recitations` are not supported.
 
 ```javascript
 (async () => {
     try {
-        const data = await getBookExplanations();
+        const data = await getDataItems(DataType.Articles); // { items: [...], next: '/api/...' }
+        const nextData = await getNextItems(data.next);
     } catch (error) {
         console.error(error.message);
     }
 })();
 ```
 
-### getFatawa()
+If the return value includes a `next` path, you can use that to call `getNextItems` with that url to get the next set of paginated items.
 
-Retrieve a list of fatawa.
+### getPage()
+
+Retrieve a a specific item.
 
 ```javascript
+import { getPage } from 'sh-albarrak-api-sdk';
+
 (async () => {
     try {
-        const bookExplanations = await getFatawa();
+        const article = await getPage(100, DataType.Articles);
     } catch (error) {
         console.error(error.message);
     }
 })();
 ```
 
-### getFatwa()
+### getCollection()
 
-Retrieve a specific fatwa.
-
-```javascript
-(async () => {
-    try {
-        const fatwa = await getFatwa(1234);
-    } catch (error) {
-        console.error(error.message);
-    }
-})();
-```
-
-### getLesson()
-
-Retrieve explanations about books.
+Retrieve a a specific collection.
 
 ```javascript
+import { getCollection } from 'sh-albarrak-api-sdk';
+
 (async () => {
     try {
-        const lesson = await getLesson();
+        const audioBook = await getCollection(100, DataType.AudioBooks);
+        const nextData = await getNextItems(audioBook.nextUrl);
     } catch (error) {
         console.error(error.message);
     }
